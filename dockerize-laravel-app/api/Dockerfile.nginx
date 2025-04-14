@@ -1,0 +1,6 @@
+FROM nginx:latest
+
+COPY ./api /usr/src
+COPY ./deployment/config/nginx/nginx-api.conf /etc/nginx/nginx.conf
+
+EXPOSE 80

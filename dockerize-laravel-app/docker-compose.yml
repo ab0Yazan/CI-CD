@@ -19,14 +19,14 @@ services:
       args:
         user: laravel
         uid: 1000
-    command: sh -c "./wait-for-it.sh mysql:3306 -t 30 && ./wait-for-it.sh redis:6379 -t 30 && php-fpm"
+    # command: sh -c "./wait-for-it.sh mysql:3306 -t 30 && ./wait-for-it.sh redis:6379 -t 30 && php-fpm"
     depends_on:
       - mysql
       - redis
       - migrate
     restart: unless-stopped
     volumes:
-      - ./api:/user/src
+      - ./api:/usr/src
 
   redis:
     image: redis:8.0-rc1-alpine
@@ -54,7 +54,20 @@ services:
       args:
         user: laravel
         uid: 1000
-    command: sh -c "./wait-for-it.sh mysql:3306 -t 30 && php /usr/src/artisan migrate --force"
+    # command: sh -c "./wait-for-it.sh mysql:3306 -t 30 && php /usr/src/artisan migrate --force"
     restart: no
     depends_on:
       - mysql
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile.nginx
+    restart: unless-stopped
+    volumes:
+      - ./api:/usr/src
+      - ./deployment/config/nginx/nginx-api.conf:/etc/nginx/nginx.conf
+    ports:
+      - "9000:80"
+    depends_on:
+      - api

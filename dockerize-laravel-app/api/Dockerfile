@@ -29,6 +29,7 @@ RUN mkdir -p /home/$user/.composer && \
 COPY --from=composer:2.5.8 /usr/bin/composer /usr/bin/composer
 
 COPY ./api .
+RUN chown -R www-data:www-data /usr/src/storage
 RUN composer install
 
 COPY ./deployment/config/php-fpm/php.ini /usr/local/etc/php/conf.d/php.ini
