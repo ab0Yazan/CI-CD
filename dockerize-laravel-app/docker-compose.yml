@@ -57,7 +57,9 @@ services:
       - ./api:/usr/src
 
   redis:
-    image: redis:8.0-rc1-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.redis
     restart: unless-stopped
     volumes:
       - ./redisdata:/data
@@ -65,10 +67,14 @@ services:
       - "6379:6379"
 
   mysql:
-    image: mysql:8.4.4
+    build:
+      args:
+        password: ${DB_PASSWORD}
+      context: .
+      dockerfile: Dockerfile.mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./mysqldata:/var/lib/mysql
       - ./deployment/config/mysql/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
