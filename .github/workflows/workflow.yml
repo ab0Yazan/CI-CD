@@ -29,9 +29,9 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker build -t $API_IMAGE --target=api -f ./api/Dockerfile --build-arg user=laravel --build-arg uid=1000 ./dockerize-laravel-app
-          docker build -t $SCHEDULER_IMAGE --target=scheduler -f ./api/Dockerfile --build-arg user=laravel --build-arg uid=1000 ./dockerize-laravel-app
-          docker build -t $WORKER_IMAGE --target=worker -f ./api/Dockerfile --build-arg user=laravel --build-arg uid=1000 ./dockerize-laravel-app
+          docker build -t $API_IMAGE --target=api -f ./api/Dockerfile --build-arg user=laravel --build-arg uid=1000 .
+          docker build -t $SCHEDULER_IMAGE --target=scheduler -f ./api/Dockerfile --build-arg user=laravel --build-arg uid=1000 .
+          docker build -t $WORKER_IMAGE --target=worker -f ./api/Dockerfile --build-arg user=laravel --build-arg uid=1000 .
 
       - name: Run PHPStan
         run: docker run --rm -t $API_IMAGE ./vendor/bin/phpstan analyze --memory-limit=1G
