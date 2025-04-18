@@ -29,8 +29,12 @@ RUN mkdir -p /home/$user/.composer && \
 COPY --from=composer:2.5.8 /usr/bin/composer /usr/bin/composer
 
 COPY ./api .
+RUN chmod 775 /usr/src/storage
 RUN chown -R www-data:www-data /usr/src/storage
 RUN composer install
+
+RUN php artisan storage:link
+RUN php artisan key:generate
 
 COPY ./deployment/config/php-fpm/php.ini /usr/local/etc/php/conf.d/php.ini
 COPY ./deployment/config/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
