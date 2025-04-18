@@ -1,0 +1,40 @@
+name: test
+on:
+    push:
+        branches: ["main"]
+
+env:
+    API_IMAGE: yazona/first-api:${{github.sha}}
+    SCHEDULER_IMAGE: yazona/first-scheduler:${{ github.sha }}
+    WORKER_IMAGE: yazona/first-worker:${{ github.sha }}
+    NGINX_IMAGE: yazona/first-nginx:${{ github.sha }}
+    PROXY_IMAGE: yazona/first-proxy:${{ github.sha }}
+    MYSQL_IMAGE: yazona/first-mysql:${{ github.sha }}
+    FRONTEND_IMAGE: yazona/first-frontend:${{ github.sha }}
+    DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+jobs:
+    build-backend-images:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: docker/login-action@v2
+              with:
+                username: ${{secrets.DOCKERHUB_USERNAME}}
+                password: ${{secrets.DOCKERHUB_TOKEN}}
+            - name: build images
+              run: |
+                docker build -t $API_IMAGE --target=api -f ./api/Dockerfile --build-arg user=laravel --build-arg=1000 .
+                docker build -t $SCHEDULER_IMAGE --target=scheduler -f ./api/Dockerfile --build-arg user=laravel --build-arg uid=1000 .
+                docker build -t $WORKER_IMAGE --target=worker --build-arg user=laravel --build-arg uid=1000 -f ./api/Dockerfile .
+            - name: run phpstan
+              run: docker run --rm -t $API_IMAGE ./vendor/bin/phpstan analyze --memory-limit=1G
+
+            - name: Run phpinsights
+              run: docker run --rm -t $API_IMAGE php artisan insights --no-interaction --min-quality=90 --min-complexity=90 --min-architecture=90 --min-style=90 --ansi --format=github-action
+
+            - name: Run tests
+              run: |
+                docker-compose -f docker-compose.ci.yml up -d
+                docker-compose -f docker-compose.ci.yml exec -t api php artisan test
+                docker-compose -f docker-compose.ci.yml down

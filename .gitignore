@@ -1,2 +1,3 @@
 dockerize-laravel-app/mysqldata
 dockerize-laravel-app/redisdata
+dockerize-laravel-app/.env
