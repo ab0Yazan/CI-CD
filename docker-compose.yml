@@ -17,7 +17,6 @@ services:
       args:
         user: laravel
         uid: 1000
-    # command: sh -c "./wait-for-it.sh mysql:3306 -t 30 && ./wait-for-it.sh redis:6379 -t 30 && php-fpm"
     depends_on:
       - mysql
       - redis
