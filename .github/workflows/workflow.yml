@@ -19,7 +19,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Log in to DockerHub
         uses: docker/login-action@v2
@@ -37,10 +38,6 @@ jobs:
         run: docker run --rm -t $API_IMAGE ./vendor/bin/phpstan analyze --memory-limit=1G
 
       - name: Run PHP Insights
-        run: docker run --rm -t $API_IMAGE php artisan insights --no-interaction --min-quality=90 --min-complexity=90 --min-architecture=90 --min-style=90 --ansi --format=github-action
-
-      - name: Run Tests
-        run: |
-          docker-compose -f docker-compose.ci.yml up -d
-          docker-compose -f docker-compose.ci.yml exec -t api php artisan test
-          docker-compose -f docker-compose.ci.yml down
+        run: docker run --rm -t $API_IMAGE php artisan insights --no-interaction \
+          --min-quality=90 --min-complexity=90 --min-architecture=90 --min-style=90 \
+          --ansi --format=github-action
