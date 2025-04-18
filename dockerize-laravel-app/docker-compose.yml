@@ -1,12 +1,10 @@
 version: "3.8"
 services:
-  forntend:
+  frontend:
     build:
       context: .
       dockerfile: frontend/Dockerfile
       target: dev
-    ports:
-      - "8080:8080"
     volumes:
       - ./frontend:/usr/src
     environment:
@@ -67,7 +65,17 @@ services:
     volumes:
       - ./api:/usr/src
       - ./deployment/config/nginx/nginx-api.conf:/etc/nginx/nginx.conf
-    ports:
-      - "9000:80"
     depends_on:
       - api
+  proxy:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.proxy
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    volumes:
+      - ./deployment/config/nginx/nginx-rproxy.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - nginx

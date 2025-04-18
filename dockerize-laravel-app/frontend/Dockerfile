@@ -5,7 +5,7 @@ COPY ./frontend .
 RUN npm install
 ############# dev stage #################################################
 FROM base AS dev
-EXPOSE 8080
+EXPOSE 80
 CMD [ "npm", "run", "serve" ]
 ############ build stage ################################################
 FROM base AS build
