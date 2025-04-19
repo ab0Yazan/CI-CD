@@ -14,6 +14,7 @@ class ExampleTest extends TestCase
     {
         $response = $this->get('api/');
 
-        $response->assertStatus(200);
+        $response->assertBadRequest();
+        // $response->assertStatus(200);
     }
 }

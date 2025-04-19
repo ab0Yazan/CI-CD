@@ -90,6 +90,18 @@ jobs:
             run: docker run --rm -t $API_IMAGE php artisan test
 
 
+    remove-images:
+        needs: ["analyze", "test"]
+        runs-on: ubuntu-latest
+        if: ${{ always() && contains(needs.*.result , 'failure') }}
+        steps:
+          - uses: actions/checkout@v3
+          - name: remove images
+            run: |
+                ./deployment/scripts/rm-image.sh yazona/first-api ${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }} ${{ secrets.DOCKERHUB_TOKEN }}
+                ./deployment/scripts/rm-image.sh yazona/first-mysql ${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }} ${{ secrets.DOCKERHUB_TOKEN }}
+                ./deployment/scripts/rm-image.sh yazona/first-worker ${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }} ${{ secrets.DOCKERHUB_TOKEN }}
+                ./deployment/scripts/rm-image.sh yazona/first-scheduler ${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }} ${{ secrets.DOCKERHUB_TOKEN }}
     build-nginx:
         needs: test
         runs-on: ubuntu-latest
