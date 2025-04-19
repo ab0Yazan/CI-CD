@@ -68,6 +68,9 @@ jobs:
       - name: Build proxy image
         run: docker build -t $PROXY_IMAGE -f ./Dockerfile.proxy .
 
+      - name: Build mysql image
+        run: docker build -t $MYSQL_IMAGE -f ./Dockerfile.mysql .
+
       - name: push api image
         run: docker push $API_IMAGE
 
