@@ -96,6 +96,10 @@ jobs:
         if: ${{ always() && contains(needs.*.result , 'failure') }}
         steps:
           - uses: actions/checkout@v3
+
+          - name: Make rm-image.sh executable
+            run: chmod +x ./deployment/scripts/rm-image.sh
+
           - name: remove images
             run: |
                 ./deployment/scripts/rm-image.sh yazona/first-api ${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }} ${{ secrets.DOCKERHUB_TOKEN }}
