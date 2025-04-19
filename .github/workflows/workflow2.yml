@@ -63,3 +63,58 @@ jobs:
             run: docker run --rm -t $API_IMAGE php artisan insights --no-interaction --min-quality=90 --min-complexity=90 --min-architecture=90 --min-style=90 --ansi --format=github-action
           - name: run integration test
             run: docker run --rm -t $API_IMAGE php artisan test
+    build-scheduler:
+        needs: test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: docker/login-action@v2
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - name: build scheduler
+              run: docker build -t $SCHEDULER_IMAGE --target=scheduler --build-arg user=laravel --build-arg uid=1000 -f ./api/Dockerfile .
+            - name: push scheduler
+              run: docker push $SCHEDULER_IMAGE
+
+    build-nginx:
+        needs: test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: docker/login-action@v2
+              with:
+                 username: ${{ secrets.DOCKERHUB_USERNAME }}
+                 password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - name: build & push nginx
+              run: |
+                docker build -t $NGINX_IMAGE -f ./api/Dockerfile.nginx .
+                docker push $NGINX_IMAGE
+
+    build-frontend:
+        needs: test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: docker/login-action@v2
+              with:
+                 username: ${{ secrets.DOCKERHUB_USERNAME }}
+                 password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - name: build & push frontend
+              run: |
+                docker build -t $FRONTEND_IMAGE --target=prod -f ./frontend/Dockerfile.nginx .
+                docker push $FRONTEND_IMAGE
+                
+    build-proxy:
+        needs: test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: docker/login-action@v2
+              with:
+                 username: ${{ secrets.DOCKERHUB_USERNAME }}
+                 password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - name: build & push proxy
+              run: |
+                docker build -t $PROXY_IMAGE -f ./Dockerfile.proxy .
+                docker push $PROXY_IMAGE
