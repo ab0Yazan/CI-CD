@@ -33,9 +33,6 @@ RUN chmod -R 775 storage bootstrap/cache
 RUN chown -R www-data:www-data /usr/src/storage
 RUN composer install
 
-RUN php artisan storage:link
-RUN php artisan key:generate
-
 COPY ./deployment/config/php-fpm/php.ini /usr/local/etc/php/conf.d/php.ini
 COPY ./deployment/config/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
