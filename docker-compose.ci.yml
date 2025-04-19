@@ -1,26 +1,24 @@
-version: "2.4"
+version: "3.8"
 services:
   api:
-    image: ${API_IMAGE}
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+      target: api
+      args:
+        user: laravel
+        uid: 1000
     environment:
       - APP_NAME=api
       - APP_ENV=local
       - APP_KEY=base64:aL6o/U2e1ziUTXsyTkfzNziH9l4crCISoWMwC8LX4B0=
       - APP_DEBUG=true
-      - APP_URL=http://localhost
+      - APP_URL=http://localhost:8000
       - LOG_CHANNEL=stack
       - LOG_LEVEL=debug
       - DB_CONNECTION=sqlite
       - QUEUE_CONNECTION=sync
       - MAIL_MAILER=log
-
-
-  migrate:
-    image: ${API_IMAGE}
-    environment:
-      - APP_ENV=local
-      - APP_KEY=base64:aL6o/U2e1ziUTXsyTkfzNziH9l4crCISoWMwC8LX4B0=
-      - APP_DEBUG=true
-      - LOG_CHANNEL=stack
-      - LOG_LEVEL=debug
-      - DB_CONNECTION=sqlite
+    restart: unless-stopped
+    volumes:
+      - ./api:/usr/src
