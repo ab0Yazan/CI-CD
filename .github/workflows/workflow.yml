@@ -45,10 +45,5 @@ jobs:
       #     --min-quality=90 --min-complexity=90 --min-architecture=90 --min-style=90 \
       #     --ansi --format=github-action
 
-      - name: Fix Laravel storage & cache folder permissions (host side)
-        run: |
-          sudo chmod -R 775 ./api/storage ./api/bootstrap/cache || true
-          sudo chown -R $USER:$USER ./api/storage ./api/bootstrap/cache || true
-
       - name: run test
         run: docker run --rm -t $API_IMAGE php artisan test
