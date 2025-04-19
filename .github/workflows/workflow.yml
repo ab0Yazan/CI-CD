@@ -45,5 +45,13 @@ jobs:
       #     --min-quality=90 --min-complexity=90 --min-architecture=90 --min-style=90 \
       #     --ansi --format=github-action
 
+      - name: Fix Laravel storage permissions
+        run: |
+          docker run --rm -t \
+            -v ${{ github.workspace }}/api:/app \
+            -w /app \
+            $API_IMAGE \
+            bash -c "mkdir -p storage/logs bootstrap/cache && chmod -R 775 storage bootstrap/cache && chown -R www-data:www-data storage bootstrap/cache"
+            
       - name: run test
         run: docker run --rm -t $API_IMAGE php artisan test
