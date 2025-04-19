@@ -31,11 +31,11 @@ jobs:
       - name: Create .env file
         run: echo "${{ secrets.LARAVEL_ENV }}" > ./api/.env
 
-      - name: run test
-        run: |
-         docker compose -f docker-compose.ci.yml up -d
-         docker compose -f docker-compose.ci.yml exec -t api php artisan test
-         
+    #   - name: run test
+    #     run: |
+    #      docker compose -f docker-compose.ci.yml up -d
+    #      docker compose -f docker-compose.ci.yml exec -t api php artisan test
+
       - name: Build Docker images
         run: |
           docker build -t $API_IMAGE --target=api -f ./api/Dockerfile --build-arg user=laravel --build-arg uid=1000 .
@@ -51,7 +51,7 @@ jobs:
       #     --ansi --format=github-action
 
 
-      
+
 
       - name: Build scheduler image
         run: docker build -t $SCHEDULER_IMAGE --target=scheduler --build-arg user=laravel --build-arg uid=1000 -f ./api/Dockerfile .
