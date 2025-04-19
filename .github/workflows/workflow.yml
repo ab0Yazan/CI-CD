@@ -28,6 +28,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Create .env file
+        run: echo "${{ secrets.LARAVEL_ENV }}" > ./api/.env
+
       - name: Build Docker images
         run: |
           docker build -t $API_IMAGE --target=api -f ./api/Dockerfile --build-arg user=laravel --build-arg uid=1000 .
