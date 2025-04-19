@@ -47,3 +47,39 @@ jobs:
 
       - name: run test
         run: docker run --rm -t $API_IMAGE php artisan test
+
+      - name: Build scheduler image
+        run: docker build -t $SCHEDULER_IMAGE --target=scheduler --build-arg user=laravel --build-arg uid=1000 -f ./api/Dockerfile .
+
+      - name: Build worker image
+        run: docker build -t $WORKER_IMAGE --target=worker --build-arg user=laravel --build-arg uid=1000 -f ./api/Dockerfile .
+
+      - name: Build nginx image
+        run: docker build -t $NGINX_IMAGE -f ./api/Dockerfile.nginx .
+
+      - name: Build frontend image
+        run: docker build -t $FRONTEND_IMAGE --target=prod -f ./frontend/Dockerfile .
+
+      - name: Build proxy image
+        run: docker build -t $PROXY_IMAGE -f ./Dockerfile.proxy .
+
+      - name: push api image
+        run: docker push $API_IMAGE
+
+      - name: push nginx image
+        run: docker push $NGINX_IMAGE
+
+      - name: push mysql image
+        run: docker push $MYSQL_IMAGE
+
+      - name: push frontend image
+        run: docker push $FRONTEND_IMAGE
+
+      - name: push worker image
+        run: docker push $WORKER_IMAGE
+
+      - name: push scheduler image
+        run: docker push $SCHEDULER_IMAGE
+
+      - name: push proxy image
+        run: docker push $PROXY_IMAGE
