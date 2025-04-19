@@ -102,7 +102,7 @@ jobs:
                  password: ${{ secrets.DOCKERHUB_TOKEN }}
             - name: build & push frontend
               run: |
-                docker build -t $FRONTEND_IMAGE --target=prod -f ./frontend/Dockerfile.nginx .
+                docker build -t $FRONTEND_IMAGE --target=prod -f ./frontend/Dockerfile .
                 docker push $FRONTEND_IMAGE
                 
     build-proxy:
