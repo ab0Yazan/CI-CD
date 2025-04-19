@@ -1,0 +1,63 @@
+name: app pipeline ci-cd
+
+on:
+    push:
+        branches: ["main"]
+
+env:
+    API_IMAGE: yazona/first-api:${{ github.sha }}
+    SCHEDULER_IMAGE: yazona/first-scheduler:${{ github.sha }}
+    WORKER_IMAGE: yazona/first-worker:${{ github.sha }}
+    NGINX_IMAGE: yazona/first-nginx:${{ github.sha }}
+    PROXY_IMAGE: yazona/first-proxy:${{ github.sha }}
+    MYSQL_IMAGE: yazona/first-mysql:${{ github.sha }}
+    FRONTEND_IMAGE: yazona/first-frontend:${{ github.sha }}
+    DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+jobs:
+    build-and-push-api-image:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: docker/login-action@v2
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - name: build api
+              run: docker build -t $API_IMAGE --build-arg user=laravel --build-arg uid=1000 -f ./api/Dockerfile .
+
+            - name: push api
+              run: docker push $API_IMAGE
+
+    build-mysql-image:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: docker/login-action@v2
+              with:
+                username: ${{ secrets.DOCKERHUB_USERNAME }}
+                password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - name: build mysql
+              run: docker build -t $MYSQL_IMAGE -f ./Dockerfile.mysql .
+            - name: push mysql
+              run: docker push $MYSQL_IMAGE
+
+    test:
+        needs: [build-and-push-api-image, build-mysql-image]
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v3
+          - uses: docker/login-action@v2
+            with:
+                username: ${{ secrets.DOCKERHUB_USERNAME }}
+                password: ${{ secrets.DOCKERHUB_TOKEN }}
+          - name: pull api image
+            run: docker pull $API_IMAGE
+          - name: pull mysql image
+            run: docker pull $MYSQL_IMAGE
+          - name: run phpstan
+            run: docker run --rm -t $API_IMAGE ./vendor/bin/phpstan analyze --memory-limit=1G
+          - name: run phpinsight
+            run: docker run --rm -t $API_IMAGE php artisan insights --no-interaction --min-quality=90 --min-complexity=90 --min-architecture=90 --min-style=90 --ansi --format=github-action
+          - name: run integration test
+            run: docker run --rm -t $API_IMAGE php artisan test
