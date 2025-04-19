@@ -31,7 +31,7 @@ COPY --from=composer:2.5.8 /usr/bin/composer /usr/bin/composer
 COPY ./deployment/config/php-fpm/php.ini /usr/local/etc/php/conf.d/php.ini
 COPY ./deployment/config/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY ./api/composer*.json /usr/src/
-COPY ./deployment/bin/laracmd.sh /usr/src/laracmd.sh
+COPY ./deployment/scripts/laracmd.sh /usr/src/laracmd.sh
 
 RUN composer install --no-scripts
 
