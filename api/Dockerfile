@@ -28,13 +28,21 @@ RUN mkdir -p /home/$user/.composer && \
 
 COPY --from=composer:2.5.8 /usr/bin/composer /usr/bin/composer
 
+COPY ./deployment/config/php-fpm/php.ini /usr/local/etc/php/conf.d/php.ini
+COPY ./deployment/config/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
+COPY ./api/composer*.json /usr/src/
+COPY ./deployment/bin/laracmd.sh /usr/src/laracmd.sh
+
+RUN composer install --no-scripts
+
 COPY ./api .
 RUN chmod -R 775 storage bootstrap/cache
 RUN chown -R www-data:www-data /usr/src/storage
-RUN composer install
 
-COPY ./deployment/config/php-fpm/php.ini /usr/local/etc/php/conf.d/php.ini
-COPY ./deployment/config/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
+RUN php artisan storage:link && \
+    chmod +x ./laracmd.sh && \
+    chown -R $user:$user /usr/src && \
+    chmod -R 775 ./storage ./bootstrap/cache
 
 USER $user
 
