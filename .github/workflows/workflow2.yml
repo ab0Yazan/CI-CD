@@ -55,9 +55,11 @@ jobs:
             run: docker pull $API_IMAGE
           - name: pull mysql image
             run: docker pull $MYSQL_IMAGE
+          - name: copy .env
+            run: copy .env.testing .env
           - name: run phpstan
             run: docker run --rm -t $API_IMAGE ./vendor/bin/phpstan analyze --memory-limit=1G
           - name: run phpinsight
             run: docker run --rm -t $API_IMAGE php artisan insights --no-interaction --min-quality=90 --min-complexity=90 --min-architecture=90 --min-style=90 --ansi --format=github-action
           - name: run integration test
-            run: docker run --rm -t $API_IMAGE php artisan key:generate && php artisan test
+            run: docker run --rm -t $API_IMAGE php artisan test
