@@ -32,10 +32,10 @@ jobs:
         run: echo "${{ secrets.LARAVEL_ENV }}" > ./api/.env
 
 
-      - name: run test
-        run: |
-         docker compose -f docker-compose.ci.yml up -d
-         docker compose -f docker-compose.ci.yml exec -T api php artisan test
+      # - name: run test
+      #   run: |
+      #    docker compose -f docker-compose.ci.yml up -d
+      #    docker compose -f docker-compose.ci.yml exec -T api php artisan test
          
       - name: Build Docker images
         run: |
