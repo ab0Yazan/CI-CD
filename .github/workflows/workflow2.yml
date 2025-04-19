@@ -56,7 +56,7 @@ jobs:
           - name: pull mysql image
             run: docker pull $MYSQL_IMAGE
           - name: copy .env
-            run: cp .env.testing .env
+            run: echo "${{ secrets.LARAVEL_ENV_TESTING }}" > ./api/.env
           - name: run phpstan
             run: docker run --rm -t $API_IMAGE ./vendor/bin/phpstan analyze --memory-limit=1G
           - name: run phpinsight
