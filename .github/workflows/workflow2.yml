@@ -15,7 +15,7 @@ env:
     DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
 jobs:
-    build-and-push-api-image:
+    build-backend-images:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
@@ -23,11 +23,20 @@ jobs:
               with:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
-            - name: build api
-              run: docker build -t $API_IMAGE --build-arg user=laravel --build-arg uid=1000 -f ./api/Dockerfile .
+            - name: build & push api
+              run: |
+                docker build -t $API_IMAGE --build-arg user=laravel --build-arg uid=1000 -f ./api/Dockerfile .
+                docker push $API_IMAGE
 
-            - name: push api
-              run: docker push $API_IMAGE
+            - name: build & push scheduler
+              run: |
+                docker build -t $SCHEDULER_IMAGE --target=scheduler --build-arg user=laravel --build-arg uid=1000 -f ./api/Dockerfile .
+                docker push $SCHEDULER_IMAGE
+
+            - name: build & push worker
+              run: |
+                  docker build -t $WORKER_IMAGE --target=worker --build-arg user=laravel --build-arg uid=1000 -f ./api/Dockerfile .
+                  docker push $WORKER_IMAGE
 
     build-mysql-image:
         runs-on: ubuntu-latest
@@ -42,8 +51,28 @@ jobs:
             - name: push mysql
               run: docker push $MYSQL_IMAGE
 
+    analyze:
+        needs: [build-backend-images, build-mysql-image]
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v3
+          - uses: docker/login-action@v2
+            with:
+                username: ${{ secrets.DOCKERHUB_USERNAME }}
+                password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+          - name: pull api image
+            run: docker pull $API_IMAGE
+          - name: pull mysql image
+            run: docker pull $MYSQL_IMAGE
+          - name: copy .env
+            run: echo "${{ secrets.LARAVEL_ENV_TESTING }}" > ./api/.env
+          - name: run phpstan
+            run: docker run --rm -t $API_IMAGE ./vendor/bin/phpstan analyze --memory-limit=1G
+          - name: run phpinsight
+            run: docker run --rm -t $API_IMAGE php artisan insights --no-interaction --min-quality=90 --min-complexity=90 --min-architecture=90 --min-style=90 --ansi --format=github-action
     test:
-        needs: [build-and-push-api-image, build-mysql-image]
+        needs: [build-backend-images, build-mysql-image]
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v3
@@ -57,25 +86,9 @@ jobs:
             run: docker pull $MYSQL_IMAGE
           - name: copy .env
             run: echo "${{ secrets.LARAVEL_ENV_TESTING }}" > ./api/.env
-          - name: run phpstan
-            run: docker run --rm -t $API_IMAGE ./vendor/bin/phpstan analyze --memory-limit=1G
-          - name: run phpinsight
-            run: docker run --rm -t $API_IMAGE php artisan insights --no-interaction --min-quality=90 --min-complexity=90 --min-architecture=90 --min-style=90 --ansi --format=github-action
           - name: run integration test
             run: docker run --rm -t $API_IMAGE php artisan test
-    build-scheduler:
-        needs: test
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
-            - uses: docker/login-action@v2
-              with:
-                  username: ${{ secrets.DOCKERHUB_USERNAME }}
-                  password: ${{ secrets.DOCKERHUB_TOKEN }}
-            - name: build scheduler
-              run: docker build -t $SCHEDULER_IMAGE --target=scheduler --build-arg user=laravel --build-arg uid=1000 -f ./api/Dockerfile .
-            - name: push scheduler
-              run: docker push $SCHEDULER_IMAGE
+
 
     build-nginx:
         needs: test
