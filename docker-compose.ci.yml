@@ -10,12 +10,12 @@ services:
       - APP_URL=http://localhost
       - LOG_CHANNEL=stack
       - LOG_LEVEL=debug
-      - DB_CONNECTION=mysql
-      - DB_HOST=mysql-test
-      - DB_PORT=3306
-      - DB_DATABASE=api
-      - DB_USERNAME=root
-      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_CONNECTION=sqlite
+      # - DB_HOST=mysql-test
+      # - DB_PORT=3306
+      # - DB_DATABASE=api
+      # - DB_USERNAME=root
+      # - DB_PASSWORD=${DB_PASSWORD}
       - QUEUE_CONNECTION=sync
       - MAIL_MAILER=log
     depends_on:
@@ -24,15 +24,15 @@ services:
       mysql-test:
         condition: service_healthy
 
-  mysql-test:
-    image: ${MYSQL_IMAGE}
-    healthcheck:
-      test: [ "CMD", "mysqladmin", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    environment:
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+  # mysql-test:
+  #   image: ${MYSQL_IMAGE}
+  #   healthcheck:
+  #     test: [ "CMD", "mysqladmin", "ping" ]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
 
   migrate:
     image: ${API_IMAGE}
@@ -42,12 +42,7 @@ services:
       - APP_DEBUG=true
       - LOG_CHANNEL=stack
       - LOG_LEVEL=debug
-      - DB_CONNECTION=mysql
-      - DB_HOST=mysql-test
-      - DB_PORT=3306
-      - DB_DATABASE=api
-      - DB_USERNAME=root
-      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_CONNECTION=sqlite
     depends_on:
       mysql-test:
         condition: service_healthy
